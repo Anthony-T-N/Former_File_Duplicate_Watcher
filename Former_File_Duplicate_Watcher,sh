@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+#output=$("inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' ./Watching_folder/ | tee -a >> ./directory_watching_log.log | grep 'CREATE\|DELETE'")
+
+# TODO: Check whether output of command contains "CREATE".
+inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' ./Watching_folder/ | tee -a ./directory_watching.log |
+while read line; 
+do
+    if echo "$line" | grep "CREATE"; then
+    # TODO: Regex + Check whether in list.
+        input="./directory_watching.log"
+        while IFS= read -r log_line
+        do
+        # TODO: Need exact match. 
+            if [[ $log_line == *"DELETE"*"${line##*/}"* ]]; then
+                echo -e "\033[1;31m<File previously deleted detected>\033[0m"
+                echo "${log_line##*/}"
+                echo "$log_line"
+            fi
+        done < "$input"
+    fi
+done
+
+# Write to log after checks?
