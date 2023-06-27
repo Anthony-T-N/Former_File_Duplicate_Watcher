@@ -8,14 +8,16 @@ while read line;
 do
     if echo "$line" | grep "CREATE"; then
     # TODO: Regex + Check whether in list.
+        extracted_string="${line##*/}"
         input="./directory_watching.log"
         while IFS= read -r log_line
         do
         # TODO: Need exact match. 
-            if [[ $log_line == *"DELETE"*"${line##*/}"* ]]; then
+            if [[ $log_line == *"DELETE"*"/$extracted_string" ]]; then
                 echo -e "\033[1;31m<File previously deleted detected>\033[0m"
-                echo "${log_line##*/}"
+                echo "Extracted_String:$extracted_string"
                 echo "$log_line"
+                echo ""
             fi
         done < "$input"
     fi
