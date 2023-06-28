@@ -12,9 +12,10 @@ do
         input="./directory_watching.log"
         while IFS= read -r log_line
         do
-        # TODO: Need exact match. 
-            if [[ $log_line == *"DELETE"*"/$extracted_string" ]]; then
-                echo -e "\033[1;31m<File previously deleted detected>\033[0m"
+        # Identifies string with "DELETE" and extracted string after "/"
+        # TODO: Make distinction between file and directory.
+            if [[ $log_line == *"DELETE"*"/$extracted_string" ]] && [[ $log_line != *"ISDIR"* ]] ; then
+                echo -e "\033[1;31m<Previously deleted file detected>\033[0m"
                 echo "Extracted_String:$extracted_string"
                 echo "$log_line"
                 echo ""
