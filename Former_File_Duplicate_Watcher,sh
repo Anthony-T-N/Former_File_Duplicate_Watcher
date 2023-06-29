@@ -13,8 +13,8 @@ do
         while IFS= read -r log_line
         do
         # Identifies string with "DELETE" and extracted string after "/"
-        # TODO: Make distinction between file and directory.
-            if [[ $log_line == *"DELETE"*"/$extracted_string" ]] && [[ $log_line != *"ISDIR"* ]] ; then
+        # TODO: Make distinction between file and directory (When directory created, lines match for non-directory deletions)
+            if [[ $log_line == *"DELETE"*"/$extracted_string" ]] || [[ $log_line != *"ISDIR"* ]] ; then
                 echo -e "\033[1;31m<Previously deleted file detected>\033[0m"
                 echo "Extracted_String:$extracted_string"
                 echo "$log_line"
@@ -24,4 +24,7 @@ do
     fi
 done
 
+#xmessage
+
 # Write to log after checks?
+
