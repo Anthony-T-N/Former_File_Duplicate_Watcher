@@ -2,7 +2,8 @@
 
 #output=$("inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' ./Watching_folder/ | tee -a >> ./directory_watching_log.log | grep 'CREATE\|DELETE'")
 
-# TODO: Check whether output of command contains "CREATE".
+# inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' ./Watching_folder/ | tee -a ./directory_watching.log |
+
 inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' ./Watching_folder/ | tee -a ./directory_watching.log |
 while read line; 
 do
@@ -16,13 +17,14 @@ do
             do
                 # Prevents printing lines containing "ISDIR"
                 if [[ $log_line != *"ISDIR"* ]] ; then
-                # Identifies string with "DELETE" and extracted string after "/"
+                    # Identifies every line with "DELETE" keyword in log file and extract string after "/"
                     if [[ $log_line == *"DELETE"*"/$extracted_string" ]] ; then
-                        notify-send -i --expire-time=0 --urgency=critical "<Previously Deleted File Detected>" "$log_line\n$line"  
+                        notify-send -i --expire-time=0 --urgency=critical "<Previously Deleted File Detected>" "$line\n$log_line"  
                         echo -e "\033[1;31m<Previously deleted file detected>\033[0m"
                         echo "Extracted_String:$extracted_string"
                         echo "$log_line"
                         echo ""
+                        break
                     fi
                 fi
             done < "$input"
