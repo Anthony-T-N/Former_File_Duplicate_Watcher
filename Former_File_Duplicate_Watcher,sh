@@ -4,7 +4,14 @@
 
 # inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' ./Watching_folder/ | tee -a ./directory_watching.log |
 
-inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' ./Watching_folder/ | tee -a ./directory_watching.log |
+if [[ $1 == "DELTA" ]] ; then
+    echo -e "TEST"
+    # date +"%FT%I:%M:%S%p%Z"
+    find $2 -type f | sort -V
+    exit 1
+fi
+
+inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' $1 | tee -a ./directory_watching.log |
 while read line; 
 do
     if echo -e "\033[1;32m$line\033[0m" | grep "CREATE" ; then
@@ -33,4 +40,3 @@ do
 done
 
 # Write to log after checks?
-
