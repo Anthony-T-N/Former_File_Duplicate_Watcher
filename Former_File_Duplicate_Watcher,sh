@@ -4,25 +4,27 @@
 
 # inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' ./Watching_folder/ | tee -a ./directory_watching.log |
 
-if [ ! -f ./directory_watch.log ] ; then
-    echo -e "./directory_watch.log does not exist..."
-    echo -e "\033[1;32mCollecting_Current_State_of_Watched_Folder\033[0m"
-    find $1 -type f | sort -V | while read line; do echo "$(date +"%FT%I:%M:%S%p%Z") CREATE $line" | tee -a ./directory_watch.log; done
+log_path="./directory_watch.log"
+
+if [ ! -f $log_path ] ; then
+    echo -e $log_path "does not exist..."
+    echo -e "\033[1;32mCollecting Current State of Watched_Folder\033[0m"
+    find $1 -type f | sort -V | while read line; do echo "$(date +"%FT%I:%M:%S%p%Z") CREATE $line" | tee -a $log_path; done
     exit 1
 fi
 
-TODO: Do not need to store information on created directories.
+#TODO: Do not need to store information on created directories.
 
 # -m: Execute indefinitely. -r: Watch all subdirectories of any directories passed as arguments
-inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' $1 | tee -a ./directory_watch.log |
+inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' $1 |
 while read line; 
 do
     if echo -e "\033[1;32m$line\033[0m" | grep "CREATE" ; then
         echo ""
         # Ignore searching log file if directory was created.
         if [[ $line != *"ISDIR"* ]] ; then
+            line_switch=false
             extracted_string="${line##*/}"
-            input="./directory_watching.log"
             while IFS= read -r log_line
             do
                 # Prevents printing lines containing "ISDIR"
@@ -34,13 +36,18 @@ do
                         echo "Extracted_String:$extracted_string"
                         echo "$log_line"
                         echo ""
+                        $line_switch=true
                         break
                     fi
                 fi
-            done < "$input"
+            done < "$log_path"
+            if [[ $line_switch==false ]] ; then
+                echo "Switch";
+                echo $line | tee -a $log_path;
+            fi
         fi
+    else
+        echo $line | tee -a $log_path;
     fi
 done
-
-# Write to log after checks?
 
