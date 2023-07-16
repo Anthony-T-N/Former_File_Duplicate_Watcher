@@ -19,8 +19,8 @@ fi
 inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' $1 |
 while read line; 
 do
+    echo ""
     if echo -e "\033[1;32m$line\033[0m" | grep "CREATE" ; then
-        echo ""
         # Ignore searching log file if directory was created.
         if [[ $line != *"ISDIR"* ]] ; then
             line_switch=false
@@ -35,24 +35,26 @@ do
                         echo -e "\033[1;31m<Previously deleted file detected>\033[0m"
                         echo "Extracted_String:$extracted_string"
                         echo "$log_line"
-                        echo ""
                         line_switch=true
                         break
                     fi
                 fi
             done < "$log_path"
             # Append newly created log lines to log file if previously deleted file not detected.
-            # TODO: Fix if statement 
             if [[ ${line_switch} = false ]] ; then
-                echo "DEBUG IF LINE";
-                echo "Line_switch: " $line_switch;
+                echo "[+] Logged as new file";
+                echo $line >> $log_path;
+            fi
+            if [[ ${line_switch} = true ]] ; then
+                echo "[!] Logged as previously detected file";
                 echo $line >> $log_path;
             fi
         fi
     # Append lines without "CREATE" keyword.
     else
-        echo "DEBUG ELSE LINE";
         echo $line | tee -a $log_path;
     fi
 done
 
+# Testing Report:
+# Script will not identify whether identical files are created in two seperate places unless a previously deleted record exist.
