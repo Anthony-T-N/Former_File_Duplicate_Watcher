@@ -42,11 +42,11 @@ do
             done < "$log_path"
             # Append newly created log lines to log file if previously deleted file not detected.
             if [[ ${line_switch} = false ]] ; then
-                echo "[+] Logged as new file";
                 echo $line >> $log_path;
             fi
             if [[ ${line_switch} = true ]] ; then
-                echo "[!] Logged as previously detected file";
+                # Created files previously deleted added to log file as "REPEAT"
+                line="${line/CREATE/REPEAT}"
                 echo $line >> $log_path;
             fi
         fi
@@ -58,3 +58,10 @@ done
 
 # Testing Report:
 # Script will not identify whether identical files are created in two seperate places unless a previously deleted record exist.
+
+# Expected: All deleted log files recorded | Actual: Expected
+# Expected: Newly created files reported as previously deleted file if deleted log already exist | Actual: Expected
+# touch abc.txt 123.txt compressed.gz test.log
+# rm abc.txt 123.txt compressed.gz test.log
+# touch abc.txt 123.txt compressed.gz test.log
+# rm ~/directory_watch.log
