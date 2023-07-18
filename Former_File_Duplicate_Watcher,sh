@@ -2,7 +2,7 @@
 
 #output=$("inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' ./Watching_folder/ | tee -a >> ./directory_watching_log.log | grep 'CREATE\|DELETE'")
 
-# inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' ./Watching_folder/ | tee -a ./directory_watching.log |
+#inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' ./Watching_folder/ | tee -a ./directory_watching.log |
 
 log_path="./directory_watch.log"
 
@@ -65,3 +65,6 @@ done
 # rm abc.txt 123.txt compressed.gz test.log
 # touch abc.txt 123.txt compressed.gz test.log
 # rm ~/directory_watch.log
+# setsid ./Watcher_Bash_Script.sh ./Watching_folder &> /dev/null
+#
+
