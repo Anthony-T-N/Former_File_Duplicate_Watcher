@@ -52,7 +52,10 @@ do
         fi
     # Append lines without "CREATE" keyword.
     else
-        echo $line | tee -a $log_path;
+        # Ignore lines with deleted directories.
+        if [[ $line != *"ISDIR"* ]] ; then
+            echo $line | tee -a $log_path;
+        fi
     fi
 done
 
@@ -65,6 +68,8 @@ done
 # rm abc.txt 123.txt compressed.gz test.log
 # touch abc.txt 123.txt compressed.gz test.log
 # rm ~/directory_watch.log
+
+# Expected: Script to run in background and still append new lines to log file and send notifications | Actual: Fail
 # setsid ./Watcher_Bash_Script.sh ./Watching_folder &> /dev/null
-#
+# notify-send should continue to work when script is treated as background task.
 
