@@ -27,7 +27,7 @@ do
             extracted_string="${line##*/}"
             while IFS= read -r log_line
             do
-                # Prevents printing lines containing "ISDIR"
+                # Prevents comparisons with lines containing "ISDIR"
                 if [[ $log_line != *"ISDIR"* ]] ; then
                     # Identifies every line with "DELETE" keyword in log file and extract string after "/"
                     if [[ $log_line == *"DELETE"*"/$extracted_string" ]] ; then
@@ -63,7 +63,11 @@ done
 # Script will not identify whether identical files are created in two seperate places unless a previously deleted record exist.
 
 # Expected: All deleted log files recorded | Actual: Expected
+# touch abc.txt 123.txt compressed.gz test.log
+# rm abc.txt 123.txt compressed.gz test.log
+
 # Expected: Newly created files reported as previously deleted file if deleted log already exist | Actual: Expected
+# rm ~/directory_watch.log
 # touch abc.txt 123.txt compressed.gz test.log
 # rm abc.txt 123.txt compressed.gz test.log
 # touch abc.txt 123.txt compressed.gz test.log
@@ -72,4 +76,9 @@ done
 # Expected: Script to run in background and still append new lines to log file and send notifications | Actual: Fail
 # setsid ./Watcher_Bash_Script.sh ./Watching_folder &> /dev/null
 # notify-send should continue to work when script is treated as background task.
+
+# Expected: Create file then delete. Create again in different location in watched directory and receive notification | Actual: Expected
+# mkdir -p ./New_Folder/Test/ && touch ./New_Folder/Test/123.txt
+# rm ./New_Folder/Test/123.txt
+# touch ./123.txt
 
