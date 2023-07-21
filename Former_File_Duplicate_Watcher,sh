@@ -13,8 +13,6 @@ if [ ! -f $log_path ] ; then
     exit 1
 fi
 
-#TODO: Do not need to store information on created directories.
-
 # -m: Execute indefinitely. -r: Watch all subdirectories of any directories passed as arguments
 inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' $1 |
 while read line; 
@@ -31,7 +29,7 @@ do
                 if [[ $log_line != *"ISDIR"* ]] ; then
                     # Identifies every line with "DELETE" keyword in log file and extract string after "/"
                     if [[ $log_line == *"DELETE"*"/$extracted_string" ]] ; then
-                        notify-send -i --expire-time=0 --urgency=critical "<Previously Deleted File Detected>" "$line\n$log_line"  
+                        notify-send --expire-time=0 --urgency=critical -i ~/vcs-locally-modified-unstaged.svg "<Previously Deleted File Detected>" "$line\n$log_line"  
                         echo -e "\033[1;31m<Previously deleted file detected>\033[0m"
                         echo "Extracted_String:$extracted_string"
                         echo "$log_line"
@@ -57,7 +55,7 @@ do
             echo $line | tee -a $log_path;
         fi
     fi
-done
+done; echo -e "\a"
 
 # Testing Report:
 # Script will not identify whether identical files are created in two seperate places unless a previously deleted record exist.
