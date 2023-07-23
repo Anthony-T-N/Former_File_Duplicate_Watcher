@@ -8,10 +8,21 @@
 
 log_path="./directory_watch.log"
 
+# If ./directory_watch.log does not exist, record filenames of all files in watched directory.
 if [ ! -f $log_path ] ; then
     echo -e $log_path "does not exist..."
     echo -e "\033[1;32mCollecting Current State of Watched Folder\033[0m"
     find $1 -type f | sort -V | while read line; do echo "$(date +"%FT%I:%M:%S%p%Z") CREATE $line" | tee -a $log_path; done
+    echo "[!] END"
+    exit 1
+fi
+
+# ./Watcher_Bash_Script.sh deletion_record
+if [[ $1 == "deletion_record" ]] ; then
+    echo -e "[+] Creating log file of file deletion logs:" "./$(date +"%FT%I:%M:%S%p%Z").log"
+    grep "DELETE" ./directory_watching.log
+    grep "DELETE" ./directory_watching.log > ./$(date +"%FT%I:%M:%S%p%Z").log
+    echo "[!] END"
     exit 1
 fi
 
