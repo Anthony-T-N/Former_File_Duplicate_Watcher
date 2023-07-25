@@ -62,6 +62,9 @@ do
                 line="${line/CREATE/REPEAT}"
                 echo $line >> $log_path;
             fi
+        # PROTOTYPE:
+        else
+            echo "$(date +"%FT%I:%M:%S%p%Z") DIRCRE $line"
         fi
     # Append lines without "CREATE" keyword.
     else
@@ -70,8 +73,7 @@ do
             echo $line | tee -a $log_path;
         # PROTOTYPE:
         else
-            grep  
-            echo "$(date +"%FT%I:%M:%S%p%Z") DIRECT $line"
+            echo "$(date +"%FT%I:%M:%S%p%Z") DIRDEL $line"
         fi
     fi
 done; echo -e "\a"
