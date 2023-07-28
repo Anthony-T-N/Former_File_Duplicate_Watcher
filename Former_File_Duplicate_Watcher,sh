@@ -28,6 +28,7 @@ if [[ $1 == "deletion_record" ]] ; then
 fi
 '
 
+#export DISPLAY=:0.0
 # -m: Execute indefinitely. -r: Watch all subdirectories of any directories passed as arguments
 inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' $1 |
 while read line; 
@@ -93,6 +94,7 @@ done;
 # rm ~/directory_watch.log
 
 # Expected: Script to run in background and still append new lines to log file and send notifications | Actual: Fail
+# export DISPLAY=:0.0
 # setsid ./Watcher_Bash_Script.sh ./Watching_folder &> /dev/null
 # notify-send should continue to work when script is treated as background task.
 
@@ -103,5 +105,4 @@ done;
 
 # Other use cases to consider:
 # - Moving files from seperate folder into watched folder. Must be considered as "new" files.
-# - Files moved to rubbish bin and not deleted.
-# - 
+# - Files moved to rubbish bin and not be logged as deleted.
