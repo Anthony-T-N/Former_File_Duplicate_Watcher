@@ -4,9 +4,17 @@
 
 #inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' ./Watching_folder/ | tee -a ./directory_watching.log |
 
+# setsid ./Watcher_Bash_Script.sh ./Watching_folder &> /dev/null
 #./Watcher_Bash_Script.sh ./Watching_folder
 
 log_path="./directory_watch.log"
+
+if [ ! -d "$1" ]; then
+    echo -e "\033[1;31m$1 does not exist.\033[0m"
+    notify-send --expire-time=0 --urgency=critical -i ~/vcs-locally-modified-unstaged.svg "$1 does not exist."
+    echo "[!] END"
+    exit 1
+fi
 
 # If ./directory_watch.log does not exist, record filenames of all files in watched directory.
 if [ ! -f $log_path ] ; then
