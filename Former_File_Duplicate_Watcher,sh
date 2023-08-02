@@ -12,8 +12,8 @@ log_path="./directory_watch.log"
 #TODO: notify-send for exit messages with times.
 if [ ! -d "$1" ]; then
     echo -e "\033[1;31m$1 does not exist.\033[0m"
-    notify-send --expire-time=0 --urgency=critical -i ~/vcs-locally-modified-unstaged.svg "$1 does not exist."
-    echo "[!] END"
+    notify-send --expire-time=0 --urgency=critical -i ~/vcs-locally-modified-unstaged.svg "$(date +"%FT%I:%M:%S%p%Z")" "$1 does not exist.\n[!] END"
+    #echo "[!] END"
     exit 1
 fi
 
@@ -21,9 +21,9 @@ fi
 if [ ! -f $log_path ] ; then
     echo -e $log_path "does not exist..."
     echo -e "\033[1;32mCollecting Current State of Watched Folder\033[0m"
-    notify-send --expire-time=0 --urgency=critical -i ~/vcs-locally-modified-unstaged.svg "$log_path does not exist.\nCollecting Current State of Watched Folder"
     find $1 -type f | sort -V | while read line; do echo "$(date +"%FT%I:%M:%S%p%Z") CREATE $line" | tee -a $log_path; done
-    echo "[!] END"
+    notify-send --expire-time=0 --urgency=critical -i ~/vcs-locally-modified-unstaged.svg "$(date +"%FT%I:%M:%S%p%Z")" "$log_path does not exist.\nCaptured current state of watched folder\n[!] END"
+    #echo "[!] END"
     exit 1
 fi
 
