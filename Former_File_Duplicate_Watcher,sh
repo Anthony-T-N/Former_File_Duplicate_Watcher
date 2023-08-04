@@ -32,12 +32,14 @@ if [[ $1 == "deletion_record" ]] ; then
 fi
 '
 
+notify-send -i ~/vcs-update-required.svg "$(date +"%FT%I:%M:%S%p%Z")" "\- [Running Watcher_Bash_Script.sh]"
+exit 1
 #export DISPLAY=:0.0
 # -m: Execute indefinitely. -r: Watch all subdirectories of any directories passed as arguments
 inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' $1 |
 while read line; 
 do
-    echo ""
+    #echo ""
     if echo -e "\033[1;32m$line\033[0m" | grep "CREATE" ; then
         # Ignore searching log file if directory was created.
         if [[ $line != *"ISDIR"* ]] ; then
