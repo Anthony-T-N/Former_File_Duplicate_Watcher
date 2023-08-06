@@ -15,8 +15,9 @@ if [ ! -d "$1" ]; then
 fi
 
 # If ./directory_watch.log does not exist, record filenames of all files in watched directory.
+# Search directories 2 levels deep.
 if [ ! -f $log_path ] ; then
-    find $1 -type f | sort -V | while read line; do echo "$(date +"%FT%I:%M:%S%p%Z") CREATE $line" | tee -a $log_path; done
+    find $1 -maxdepth 2 -type d | sort -V | while read line; do echo "$(date +"%FT%I:%M:%S%p%Z") CREATE,ISDIR $line" | tee -a $log_path; done
     notify-send --expire-time=0 --urgency=critical -i ~/vcs-locally-modified-unstaged.svg "$(date +"%FT%I:%M:%S%p%Z")" "\- $log_path does not exist.\n- Captured current state of watched folder\n- [!] END"
     exit 1
 fi
