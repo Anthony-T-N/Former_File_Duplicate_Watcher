@@ -17,7 +17,7 @@ fi
 # If ./directory_watch.log does not exist, record filenames of all files in watched directory.
 # Search directories 2 levels deep.
 if [ ! -f $log_path ] ; then
-    find $1 -maxdepth 2 -type d | sort -V | while read line; do echo "$(date +"%FT%I:%M:%S%p%Z") CREATE,ISDIR $line" | tee -a $log_path; done
+    find $1 -maxdepth 3 -type d | sort -V | while read line; do echo "$(date +"%FT%I:%M:%S%p%Z") CREATE,ISDIR $line" | tee -a $log_path; done
     notify-send --expire-time=0 --urgency=critical -i ~/vcs-locally-modified-unstaged.svg "$(date +"%FT%I:%M:%S%p%Z")" "\- $log_path does not exist.\n- Captured current state of watched folder\n- [!] END"
     exit 1
 fi
@@ -37,9 +37,12 @@ notify-send -i ~/vcs-update-required.svg "$(date +"%FT%I:%M:%S%p%Z")" "\- [Runni
 #exit 1
 #export DISPLAY=:0.0
 # -m: Execute indefinitely. -r: Watch all subdirectories of any directories passed as arguments
+# TODO: Search directory n levels down.
+# Main > Category > Subfolders > Created_Folders
 inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' $1 |
 while read line; 
 do
+    echo -e "[Debug] - $line"
     if echo -e "\033[1;32m$line\033[0m" | grep "CREATE,ISDIR" ; then
         echo ""
         # Ignore non-directory creations.
