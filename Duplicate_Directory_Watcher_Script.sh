@@ -42,9 +42,11 @@ notify-send -i ~/vcs-update-required.svg "$(date +"%FT%I:%M:%S%p%Z")" "\- [Runni
 # find "$PWD" -ls
 # ls -l | grep '^./*/*/*/*
 # find "$PWD" -ls | grep -P "/.+/.+/.+/.+/"
+# /[^/]+/[^/]+/[^/]+/[^/]+/[^/]+/$
 inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' $1 |
 while read line; 
 do
+    # Only match directory at certain depth here.
     echo -e "[Debug] - $line"
     if echo -e "\033[1;32m$line\033[0m" | grep "CREATE,ISDIR" ; then
         echo ""
