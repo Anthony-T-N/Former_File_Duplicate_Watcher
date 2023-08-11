@@ -43,6 +43,8 @@ notify-send -i ~/vcs-update-required.svg "$(date +"%FT%I:%M:%S%p%Z")" "\- [Runni
 # ls -l | grep '^./*/*/*/*
 # find "$PWD" -ls | grep -P "/.+/.+/.+/.+/"
 # /[^/]+/[^/]+/[^/]+/[^/]+/[^/]+/$
+# find "$PWD" -ls | grep -P " /[^/]+/[^/]+/[^/]+/[^/]+/[^/]+/[^/]+$"
+# /media/user/device/Category/Sub-category/Item/IGNORE/IGNORE
 inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' $1 |
 while read line; 
 do
