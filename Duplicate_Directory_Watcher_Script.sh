@@ -43,13 +43,14 @@ notify-send -i ~/vcs-update-required.svg "$(date +"%FT%I:%M:%S%p%Z")" "\- [Runni
 # ls -l | grep '^./*/*/*/*
 # find "$PWD" -ls | grep -P "/.+/.+/.+/.+/"
 # /[^/]+/[^/]+/[^/]+/[^/]+/[^/]+/$
-# find "$PWD" -ls | grep -P " /[^/]+/[^/]+/[^/]+/[^/]+/[^/]+/[^/]+$"
+# find "$PWD" -ls | grep -P " ./[^/]+/[^/]+/[^/]+/[^/]+/[^/]+/[^/]+$"
 # /media/user/device/Category/Sub-category/Item/IGNORE/IGNORE
 inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' $1 |
 while read line; 
 do
     # Only match directory at certain depth here.
     echo -e "[Debug] - $line"
+    echo -e "Matched - $line" | grep -P "./[^/]+/[^/]+/[^/]+/[^/]+$"
     if echo -e "\033[1;32m$line\033[0m" | grep "CREATE,ISDIR" ; then
         echo ""
         # Ignore non-directory creations.
