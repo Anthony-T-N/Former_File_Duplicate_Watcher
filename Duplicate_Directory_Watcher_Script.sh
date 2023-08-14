@@ -37,20 +37,18 @@ notify-send -i ~/vcs-update-required.svg "$(date +"%FT%I:%M:%S%p%Z")" "\- [Runni
 #exit 1
 #export DISPLAY=:0.0
 # -m: Execute indefinitely. -r: Watch all subdirectories of any directories passed as arguments
-# TODO: Search directory n levels down.
 # Main > Category > Subfolders > Created_Folders
 # find "$PWD" -ls
 # ls -l | grep '^./*/*/*/*
 # find "$PWD" -ls | grep -P "/.+/.+/.+/.+/"
-# /[^/]+/[^/]+/[^/]+/[^/]+/[^/]+/$
-# find "$PWD" -ls | grep -P " ./[^/]+/[^/]+/[^/]+/[^/]+/[^/]+/[^/]+$"
 # /media/user/device/Category/Sub-category/Item/IGNORE/IGNORE
+# TODO: Directories with \ break script
 inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' $1 |
 while read line; 
 do
     # Only match directory at certain depth here.
     echo -e "\033[1;34mMatched\033[0m - $line" | grep -P "CREATE,ISDIR ./[^/]+/[^/]+/[^/]+/[^/]+$"
-    if echo -e "\033[1;32m$line\033[0m" | grep "CREATE,ISDIR ./[^/]+/[^/]+/[^/]+/[^/]+$" ; then
+    if echo -e "\033[1;32m$line\033[0m" | grep -P "CREATE,ISDIR ./[^/]+/[^/]+/[^/]+/[^/]+$" ; then
         echo ""
         # Ignore non-directory creations.
         if [[ $line == *"ISDIR"* ]] ; then
@@ -62,7 +60,7 @@ do
                     # Identifies every line with "DELETE" keyword in log file and extract string after "/"
                     if [[ $log_line == *"DELETE"*"/$extracted_string" ]] ; then
                         notify-send --expire-time=0 --urgency=critical -i ~/vcs-locally-modified-unstaged.svg "[Previously Deleted Directory Detected]" "$line\n$log_line"  
-                        echo -e "\033[1;31m[Previously deleted file detected]\033[0m"
+                        echo -e "\033[1;31m[Previously Deleted Directory Detected]\033[0m"
                         echo "Extracted_String:$extracted_string"
                         echo "$log_line"
                         line_switch=true
