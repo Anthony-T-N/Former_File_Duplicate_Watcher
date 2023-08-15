@@ -15,7 +15,7 @@ if [ ! -d "$1" ]; then
 fi
 
 # If ./directory_watch.log does not exist, record filenames of all files in watched directory.
-# Search directories 2 levels deep.
+# Search directories 3 levels deep.
 if [ ! -f $log_path ] ; then
     find $1 -mindepth 3 -maxdepth 3 -type d | sort -V | while read line; do echo "$(date +"%FT%I:%M:%S%p%Z") CREATE,ISDIR $line" | tee -a $log_path; done
     notify-send --expire-time=0 --urgency=critical -i ~/vcs-locally-modified-unstaged.svg "$(date +"%FT%I:%M:%S%p%Z")" "\- $log_path does not exist.\n- Captured current state of watched folder\n- [!] END"
@@ -42,55 +42,47 @@ notify-send -i ~/vcs-update-required.svg "$(date +"%FT%I:%M:%S%p%Z")" "\- [Runni
 # ls -l | grep '^./*/*/*/*
 # find "$PWD" -ls | grep -P "/.+/.+/.+/.+/"
 # /media/user/device/Category/Sub-category/Item/IGNORE/IGNORE
-# TODO: Directories with \ break script
 inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' $1 |
-while read line; 
+while read -r line; 
 do
     # Only match directory at certain depth here.
-    echo -e "\033[1;34mMatched\033[0m - $line" | grep -P "CREATE,ISDIR ./[^/]+/[^/]+/[^/]+/[^/]+$"
+    # # Ignore non-directory creations.
+    #echo -e "\033[1;34mMatched\033[0m - $line" | grep -P "CREATE,ISDIR ./[^/]+/[^/]+/[^/]+/[^/]+$"
     if echo -e "\033[1;32m$line\033[0m" | grep -P "CREATE,ISDIR ./[^/]+/[^/]+/[^/]+/[^/]+$" ; then
-        echo ""
-        # Ignore non-directory creations.
-        if [[ $line == *"ISDIR"* ]] ; then
-            line_switch=false
-            extracted_string="${line##*/}"
-            while IFS= read -r log_line
-            do
-                if [[ $log_line == *"ISDIR"* ]] ; then
-                    # Identifies every line with "DELETE" keyword in log file and extract string after "/"
-                    if [[ $log_line == *"DELETE"*"/$extracted_string" ]] ; then
-                        notify-send --expire-time=0 --urgency=critical -i ~/vcs-locally-modified-unstaged.svg "[Previously Deleted Directory Detected]" "$line\n$log_line"  
-                        echo -e "\033[1;31m[Previously Deleted Directory Detected]\033[0m"
-                        echo "Extracted_String:$extracted_string"
-                        echo "$log_line"
-                        line_switch=true
-                        break
-                    fi
+        line_switch=false
+        extracted_string="${line##*/}"
+        while IFS= read -r log_line
+        do
+            if [[ $log_line == *"ISDIR"* ]] ; then
+                # Identifies every line with "DELETE" keyword in log file and extract string after "/"
+                if [[ $log_line == *"DELETE"*"/$extracted_string" ]] ; then
+                    notify-send --expire-time=0 --urgency=critical -i ~/vcs-locally-modified-unstaged.svg "[Previously Deleted Directory Detected]" "$line\n$log_line"  
+                    echo -e "\033[1;31m[Previously Deleted Directory Detected]\033[0m"
+                    echo "Extracted_String:$extracted_string"
+                    echo "$log_line"
+                    line_switch=true
+                    break
                 fi
-            done < "$log_path"
-            # Append newly created log lines to log file if previously deleted file not detected.
-            if [[ ${line_switch} = false ]] ; then
-                echo $line >> $log_path;
             fi
-            if [[ ${line_switch} = true ]] ; then
-                # Created files previously deleted added to log file as "REPEAT"
-                line="${line/CREATE/REPEAT}"
-                echo $line >> $log_path;
-            fi
+        done < "$log_path"
+        # Append newly created log lines to log file if previously deleted file not detected.
+        if [[ ${line_switch} = false ]] ; then
+            echo $line >> $log_path;
+        fi
+        if [[ ${line_switch} = true ]] ; then
+            # Created files previously deleted added to log file as "REPEAT"
+            line="${line/CREATE/REPEAT}"
+            echo $line >> $log_path;
+        fi
         # PROTOTYPE:
         #else
         #    echo "$(date +"%FT%I:%M:%S%p%Z") DIRCRE $line"
-        fi
     # Append lines without "CREATE" keyword.
-    else
-        if [[ $line == *"ISDIR"* ]] ; then
-            echo $line | tee -a $log_path;
-        # PROTOTYPE:
-        #else
-        #    echo "$(date +"%FT%I:%M:%S%p%Z") DIRDEL $line"
-        fi
     fi
-done; 
+    if echo -e "\033[1;32m$line\033[0m" | grep -P "DELETE,ISDIR ./[^/]+/[^/]+/[^/]+/[^/]+$" ; then
+        echo $line | tee -a $log_path;
+    fi
+done;
 
 # Testing Report:
 # Script will not identify whether identical files are created in two seperate places unless a previously deleted record exist.
