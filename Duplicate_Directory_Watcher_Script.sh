@@ -42,13 +42,21 @@ notify-send -i ~/vcs-update-required.svg "$(date +"%FT%I:%M:%S%p%Z")" "\- [Runni
 # ls -l | grep '^./*/*/*/*
 # find "$PWD" -ls | grep -P "/.+/.+/.+/.+/"
 # /media/user/device/Category/Sub-category/Item/IGNORE/IGNORE
+# TODO: Fix
+echo -e "$2"
+depth_pattern="." 
+for i in {1..$2};
+    do depth_pattern+="/[^/]+"; 
+done;
+depth_pattern+="$"
+echo -e "$depth_pattern"
+
 inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' $1 |
 while read -r line; 
 do
     # Only match directory at certain depth here.
     # # Ignore non-directory creations.
-    #echo -e "\033[1;34mMatched\033[0m - $line" | grep -P "CREATE,ISDIR ./[^/]+/[^/]+/[^/]+/[^/]+$"
-    if echo -e "\033[1;32m$line\033[0m" | grep -P "CREATE,ISDIR ./[^/]+/[^/]+/[^/]+/[^/]+$" ; then
+    if echo -e "\033[1;32m$line\033[0m" | grep -P "CREATE,ISDIR $depth_pattern" ; then
         line_switch=false
         extracted_string="${line##*/}"
         while IFS= read -r log_line
@@ -79,8 +87,8 @@ do
         #    echo "$(date +"%FT%I:%M:%S%p%Z") DIRCRE $line"
     # Append lines without "CREATE" keyword.
     fi
-    if echo -e "\033[1;32m$line\033[0m" | grep -P "DELETE,ISDIR ./[^/]+/[^/]+/[^/]+/[^/]+$" ; then
-        echo $line | tee -a $log_path;
+    if echo -e "\033[1;32m$line\033[0m" | grep -P "DELETE,ISDIR $depth_pattern" ; then
+        echo $line >> $log_path;
     fi
 done;
 
