@@ -34,7 +34,7 @@ fi
 '
 
 notify-send -i ~/vcs-update-required.svg "$(date +"%FT%I:%M:%S%p%Z")" "\- [Running Directory_Watcher_Script.sh]"
-#exit 1
+
 #export DISPLAY=:0.0
 # -m: Execute indefinitely. -r: Watch all subdirectories of any directories passed as arguments
 # Main > Category > Subfolders > Created_Folders
@@ -42,10 +42,9 @@ notify-send -i ~/vcs-update-required.svg "$(date +"%FT%I:%M:%S%p%Z")" "\- [Runni
 # ls -l | grep '^./*/*/*/*
 # find "$PWD" -ls | grep -P "/.+/.+/.+/.+/"
 # /media/user/device/Category/Sub-category/Item/IGNORE/IGNORE
-# TODO: Fix
-echo -e "$2"
+
 depth_pattern="." 
-for i in {1..$2};
+for ((i = 1; i <= $2 ; i++));
     do depth_pattern+="/[^/]+"; 
 done;
 depth_pattern+="$"
