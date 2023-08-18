@@ -4,8 +4,9 @@
 
 #inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' ./Watching_folder/ | tee -a ./directory_watching.log |
 
-# setsid ./Directory_Watcher_Script.sh ./Watching_folder &> /dev/null
-#./Directory_Watcher_Script.sh ./Watching_folder
+# setsid ./Duplicate_Directory_Watcher_Script.sh ./Watching_folder &> /dev/null
+# setsid ./Duplicate_Directory_Watcher_Script.sh ./Watching_folder 4 &> /dev/null
+#./Duplicate_Directory_Watcher_Script.sh ./Watching_folder
 
 log_path="./directory_watch.log"
 
@@ -17,13 +18,13 @@ fi
 # If ./directory_watch.log does not exist, record filenames of all files in watched directory.
 # Search directories 3 levels deep.
 if [ ! -f $log_path ] ; then
-    find $1 -mindepth 3 -maxdepth 3 -type d | sort -V | while read line; do echo "$(date +"%FT%I:%M:%S%p%Z") CREATE,ISDIR $line" | tee -a $log_path; done
+    find $1 -mindepth "$(($2-1))" -maxdepth "$(($2-1))" -type d | sort -V | while read -r line; do echo "$(date +"%FT%I:%M:%S%p%Z") CREATE,ISDIR $line" | tee -a $log_path; done
     notify-send --expire-time=0 --urgency=critical -i ~/vcs-locally-modified-unstaged.svg "$(date +"%FT%I:%M:%S%p%Z")" "\- $log_path does not exist.\n- Captured current state of watched folder\n- [!] END"
     exit 1
 fi
 
 : '
-# ./Directory_Watcher_Script.sh deletion_record
+# ./Duplicate_Directory_Watcher_Script.sh deletion_record
 if [[ $1 == "deletion_record" ]] ; then
     echo -e "[+] Creating log file of file deletion logs:" "./$(date +"%FT%I:%M:%S%p%Z")-directory_watch.log"
     grep "DELETE" $log_path
@@ -33,7 +34,7 @@ if [[ $1 == "deletion_record" ]] ; then
 fi
 '
 
-notify-send -i ~/vcs-update-required.svg "$(date +"%FT%I:%M:%S%p%Z")" "\- [Running Directory_Watcher_Script.sh]"
+notify-send -i ~/vcs-update-required.svg "$(date +"%FT%I:%M:%S%p%Z")" "\- [Running Duplicate_Directory_Watcher_Script.sh]"
 
 #export DISPLAY=:0.0
 # -m: Execute indefinitely. -r: Watch all subdirectories of any directories passed as arguments
@@ -107,7 +108,7 @@ done;
 
 # Expected: Script to run in background and still append new lines to log file and send notifications | Actual: Expected
 # export DISPLAY=:0.0
-# setsid ./Directory_Watcher_Script.sh ./Watching_folder &> /dev/null
+# setsid ./Duplicate_Directory_Watcher_Script.sh ./Watching_folder &> /dev/null
 # notify-send should continue to work when script is treated as background task and with terminal closed.
 
 # Expected: Create file then delete. Create again in different location in watched directory and receive notification | Actual: Expected
