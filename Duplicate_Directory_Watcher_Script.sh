@@ -1,12 +1,6 @@
 #!/usr/bin/env bash
 
-#output=$("inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' ./Watching_folder/ | tee -a >> ./directory_watching_log.log | grep 'CREATE\|DELETE'")
-
-#inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' ./Watching_folder/ | tee -a ./directory_watching.log |
-
-# setsid ./Duplicate_Directory_Watcher_Script.sh ./Watching_folder &> /dev/null
 # setsid ./Duplicate_Directory_Watcher_Script.sh ./Watching_folder 4 &> /dev/null
-#./Duplicate_Directory_Watcher_Script.sh ./Watching_folder
 
 log_path="./directory_watch.log"
 
@@ -15,8 +9,7 @@ if [ ! -d "$1" ]; then
     exit 1
 fi
 
-# If ./directory_watch.log does not exist, record filenames of all files in watched directory.
-# Search directories 3 levels deep.
+# If ./directory_watch.log does not exist, record filenames of all files in watched directory at n directory depth.
 if [ ! -f $log_path ] ; then
     find $1 -mindepth "$(($2-1))" -maxdepth "$(($2-1))" -type d | sort -V | while read -r line; do echo "$(date +"%FT%I:%M:%S%p%Z") CREATE,ISDIR $line" | tee -a $log_path; done
     notify-send --expire-time=0 --urgency=critical -i ~/vcs-locally-modified-unstaged.svg "$(date +"%FT%I:%M:%S%p%Z")" "\- $log_path does not exist.\n- Captured current state of watched folder\n- [!] END"
@@ -24,6 +17,7 @@ if [ ! -f $log_path ] ; then
 fi
 
 : '
+# Use this instead: grep "CREATE,ISDIR" ./directory_watch.log > ./$(date +"%FT%I:%M:%S%p%Z")-directory_watch.log
 # ./Duplicate_Directory_Watcher_Script.sh deletion_record
 if [[ $1 == "deletion_record" ]] ; then
     echo -e "[+] Creating log file of file deletion logs:" "./$(date +"%FT%I:%M:%S%p%Z")-directory_watch.log"
@@ -37,13 +31,9 @@ fi
 notify-send -i ~/vcs-update-required.svg "$(date +"%FT%I:%M:%S%p%Z")" "\- [Running Duplicate_Directory_Watcher_Script.sh]"
 
 #export DISPLAY=:0.0
-# -m: Execute indefinitely. -r: Watch all subdirectories of any directories passed as arguments
-# Main > Category > Subfolders > Created_Folders
-# find "$PWD" -ls
-# ls -l | grep '^./*/*/*/*
-# find "$PWD" -ls | grep -P "/.+/.+/.+/.+/"
-# /media/user/device/Category/Sub-category/Item/IGNORE/IGNORE
 
+# Example: find "$PWD" -ls | grep -P " /[^/]+/[^/]+/[^/]+/[^/]+/[^/]+/[^/]+$"
+# Main > Category > Subfolders > Created_Folders
 depth_pattern="." 
 for ((i = 1; i <= $2 ; i++));
     do depth_pattern+="/[^/]+"; 
@@ -51,11 +41,11 @@ done;
 depth_pattern+="$"
 echo -e "$depth_pattern"
 
+# -m: Execute indefinitely. -r: Watch all subdirectories of any directories passed as arguments
 inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' $1 |
 while read -r line; 
 do
-    # Only match directory at certain depth here.
-    # # Ignore non-directory creations.
+    # Ignore non-directory creations.
     if echo -e "\033[1;32m$line\033[0m" | grep -P "CREATE,ISDIR $depth_pattern" ; then
         line_switch=false
         extracted_string="${line##*/}"
@@ -82,9 +72,6 @@ do
             line="${line/CREATE/REPEAT}"
             echo $line >> $log_path;
         fi
-        # PROTOTYPE:
-        #else
-        #    echo "$(date +"%FT%I:%M:%S%p%Z") DIRCRE $line"
     # Append lines without "CREATE" keyword.
     fi
     if echo -e "\033[1;32m$line\033[0m" | grep -P "DELETE,ISDIR $depth_pattern" ; then
