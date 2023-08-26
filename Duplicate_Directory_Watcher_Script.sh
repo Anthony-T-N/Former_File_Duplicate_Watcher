@@ -4,8 +4,32 @@
 
 log_path="./directory_watch.log"
 
+while getopts ":p:d:h:" OPTION; do
+    case $OPTION in
+        p)
+            echo "PATH"
+            directory_path="$OPTARG"
+            echo "The value provided is $directory_path"
+            ;;
+        d)
+            echo "DEPTH"
+            ;;
+        h)
+            echo "HELP"
+    esac
+done
+
+echo "Directory_Path: $directory_path"
+
+
 if [ ! -d "$1" ]; then
     notify-send --expire-time=0 --urgency=critical -i ~/vcs-locally-modified-unstaged.svg "$(date +"%FT%I:%M:%S%p%Z")" "\- $1 does not exist.\n- [!] END"
+    exit 1
+fi
+
+if [ "$#" > 2 ] ; then
+    if [ ! -d "$2" ]; then
+    notify-send --expire-time=0 --urgency=critical -i ~/vcs-locally-modified-unstaged.svg "$(date +"%FT%I:%M:%S%p%Z")" "\- $2 does not exist.\n- [!] END"
     exit 1
 fi
 
