@@ -4,38 +4,48 @@
 
 log_path="./directory_watch.log"
 
-while getopts ":p:d:h:" OPTION; do
+while getopts ":p:s:d:h:" OPTION; do
     case $OPTION in
         p)
             echo "PATH"
-            directory_path="$OPTARG"
-            echo "The value provided is $directory_path"
+            directory_watch_path="$OPTARG"
+            echo "The value provided is $directory_watch_path"
+            ;;
+        s)
+            echo "PATH2"
+            directory_watch_path_s="$OPTARG"
+            echo "The value provided is $directory_watch_path_s"
             ;;
         d)
-            echo "DEPTH"
+            directory_watch_depth="$OPTARG"
+            echo "Directory_watch_depth: $OPTARG"
             ;;
-        h)
-            echo "HELP"
+        *)
+            echo "Usage: $0 [-p directory_name] [-d watch_depth]"
+            exit 1
+            ;;
     esac
 done
 
-echo "Directory_Path: $directory_path"
+echo "Directory_Path: $directory_watch_path"
 
-
-if [ ! -d "$1" ]; then
-    notify-send --expire-time=0 --urgency=critical -i ~/vcs-locally-modified-unstaged.svg "$(date +"%FT%I:%M:%S%p%Z")" "\- $1 does not exist.\n- [!] END"
+if [ ! -d "$directory_watch_path" ]; then
+    notify-send --expire-time=0 --urgency=critical -i ~/vcs-locally-modified-unstaged.svg "$(date +"%FT%I:%M:%S%p%Z")" "\- $directory_watch_path does not exist.\n- [!] END"
     exit 1
 fi
 
-if [ "$#" > 2 ] ; then
-    if [ ! -d "$2" ]; then
-    notify-send --expire-time=0 --urgency=critical -i ~/vcs-locally-modified-unstaged.svg "$(date +"%FT%I:%M:%S%p%Z")" "\- $2 does not exist.\n- [!] END"
+if [ ! -d "$directory_watch_path_s" ]; then
+    notify-send --expire-time=0 --urgency=critical -i ~/vcs-locally-modified-unstaged.svg "$(date +"%FT%I:%M:%S%p%Z")" "\- $directory_watch_path_s does not exist.\n- [!] END"
     exit 1
 fi
+
+
+#if [ "$#" > 2 ] ; then
+#fi
 
 # If ./directory_watch.log does not exist, record filenames of all files in watched directory at n directory depth.
 if [ ! -f $log_path ] ; then
-    find $1 -mindepth "$(($2-1))" -maxdepth "$(($2-1))" -type d | sort -V | while read -r line; do echo "$(date +"%FT%I:%M:%S%p%Z") CREATE,ISDIR $line" | tee -a $log_path; done
+    find $directory_watch_path -mindepth "$(($directory_watch_depth-1))" -maxdepth "$(($directory_watch_depth-1))" -type d | sort -V | while read -r line; do echo "$(date +"%FT%I:%M:%S%p%Z") CREATE,ISDIR $line" | tee -a $log_path; done
     notify-send --expire-time=0 --urgency=critical -i ~/vcs-locally-modified-unstaged.svg "$(date +"%FT%I:%M:%S%p%Z")" "\- $log_path does not exist.\n- Captured current state of watched folder\n- [!] END"
     exit 1
 fi
@@ -59,14 +69,14 @@ notify-send -i ~/vcs-update-required.svg "$(date +"%FT%I:%M:%S%p%Z")" "\- [Runni
 # Example: find "$PWD" -ls | grep -P " /[^/]+/[^/]+/[^/]+/[^/]+/[^/]+/[^/]+$"
 # Main > Category > Subfolders > Created_Folders
 depth_pattern="." 
-for ((i = 1; i <= $2 ; i++));
+for ((i = 1; i <= $directory_watch_depth ; i++));
     do depth_pattern+="/[^/]+"; 
 done;
 depth_pattern+="$"
 echo -e "$depth_pattern"
 
 # -m: Execute indefinitely. -r: Watch all subdirectories of any directories passed as arguments
-inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' $1 |
+inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' $directory_watch_path |
 while read -r line; 
 do
     # Ignore non-directory creations.
