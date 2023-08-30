@@ -10,9 +10,17 @@ while getopts ":p:s:d:h:" OPTION; do
     case $OPTION in
         p)
             directory_watch_path="$OPTARG"
+            if [[ $directory_watch_path != "/"* ]]; then 
+                notify-send --expire-time=0 --urgency=critical -i ~/vcs-locally-modified-unstaged.svg "$(date +"%FT%I:%M:%S%p%Z")" "\- $directory_watch_path missing / \n- [!] END"
+                exit 1
+            fi
             ;;
         s)
             directory_watch_path_s="$OPTARG"
+            if [[ $directory_watch_path_s != "/"* ]]; then 
+                notify-send --expire-time=0 --urgency=critical -i ~/vcs-locally-modified-unstaged.svg "$(date +"%FT%I:%M:%S%p%Z")" "\- $directory_watch_path_s missing / \n- [!] END"
+                exit 1
+            fi
             second_directory_switch=true
             ;;
         d)
