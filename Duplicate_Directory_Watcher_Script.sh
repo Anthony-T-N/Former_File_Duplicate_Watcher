@@ -24,11 +24,15 @@ while getopts ":p:s:d:h:" OPTION; do
             second_directory_switch=true
             ;;
         d)
-        # Int validation required
+            re='^[0-9]+$'
+            if ! [[ "$OPTARG" =~ $re ]] ; then
+                notify-send --expire-time=0 --urgency=critical -i ~/vcs-locally-modified-unstaged.svg "$(date +"%FT%I:%M:%S%p%Z")" "\- d directory_watch_depth not an integer \n- [!] END"
+                exit 1
+            fi
             directory_watch_depth="$OPTARG"
             ;;
         *)
-            echo "Usage: $0 [-p directory_path] [-s directory_path] [-d watch_depth]"
+            echo "Usage: $0 [-p directory_path] [-s directory_path] [-d directory_watch_depth]"
             exit 1
             ;;
     esac
