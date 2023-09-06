@@ -95,22 +95,22 @@ inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%
 while read -r line; 
 do
     # Ignore non-directory creations.
-    if echo -e "\033[1;32m$line\033[0m" | grep -P "CREATE,ISDIR $depth_pattern" ; then
+    if echo -e "\033[1;32m$line\033[0m" | grep -P "CREATE".*" $depth_pattern" ; then
         line_switch=false
         extracted_string="${line##*/}"
         while IFS= read -r log_line
         do
-            if [[ $log_line == *"ISDIR"* ]] ; then
-                # Identifies every line with "DELETE" keyword in log file and extract string after "/"
-                if [[ $log_line == *"DELETE"*"/$extracted_string" ]] ; then
-                    notify-send --expire-time=0 --urgency=critical -i ~/vcs-locally-modified-unstaged.svg "[Previously Deleted Directory Detected]" "$line\n$log_line"  
-                    echo -e "\033[1;31m[Previously Deleted Directory Detected]\033[0m"
-                    echo "Extracted_String:$extracted_string"
-                    echo "$log_line"
-                    line_switch=true
-                    break
-                fi
+            #if [[ $log_line == *"ISDIR"* ]] ; then
+            # Identifies every line with "DELETE" keyword in log file and extract string after "/"
+            if [[ $log_line == *"DELETE"*"/$extracted_string" ]] ; then
+                notify-send --expire-time=0 --urgency=critical -i ~/vcs-locally-modified-unstaged.svg "[Previously Deleted Directory Detected]" "$line\n$log_line"  
+                echo -e "\033[1;31m[Previously Deleted Directory Detected]\033[0m"
+                echo "Extracted_String:$extracted_string"
+                echo "$log_line"
+                line_switch=true
+                break
             fi
+            #fi
         done < "$log_path"
         # Append newly created log lines to log file if previously deleted file not detected.
         if [[ ${line_switch} = false ]] ; then
@@ -123,7 +123,7 @@ do
         fi
     # Append lines without "CREATE" keyword.
     fi
-    if echo -e "\033[1;32m$line\033[0m" | grep -P "DELETE,ISDIR $depth_pattern" ; then
+    if echo -e "\033[1;32m$line\033[0m" | grep -P "DELETE".*" $depth_pattern" ; then
         echo $line >> $log_path;
     fi
 done;
