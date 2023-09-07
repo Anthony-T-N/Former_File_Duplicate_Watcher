@@ -55,11 +55,15 @@ if [ $secondary_directory_switch == true ]; then
     fi
 fi 
 
+# TODO: Reads at wrong level.
 # If ./directory_watch.log does not exist, record filenames of all files in watched directory at n directory depth.
 if [ ! -f $log_path ] ; then
-    find $directory_watch_path -mindepth "$(($directory_watch_depth-1))" -maxdepth "$(($directory_watch_depth-1))" -type d | sort -V | while read -r line; do echo "$(date +"%FT%I:%M:%S%p%Z") CREATE,ISDIR $line" | tee -a $log_path; done
+    echo "directory_watch_depth: $directory_watch_depth"
+    find $directory_watch_path -regex "/[^/]+/[^/]+/[^/]+/[^/]+$" -type d | sort -V | while read -r line; do echo "$(date +"%FT%I:%M:%S%p%Z") CREATE,ISDIR $line" | tee -a $log_path; done
+    find $directory_watch_path -regex "/[^/]+/[^/]+/[^/]+/[^/]+$" -type f | sort -V | while read -r line; do echo "$(date +"%FT%I:%M:%S%p%Z") CREATE $line" | tee -a $log_path; done
     if [ $secondary_directory_switch == true ]; then
-        find $directory_watch_path_s -mindepth "$(($directory_watch_depth-1))" -maxdepth "$(($directory_watch_depth-1))" -type d | sort -V | while read -r line; do echo "$(date +"%FT%I:%M:%S%p%Z") CREATE,ISDIR $line" | tee -a $log_path; done
+        find $directory_watch_path_s -regex "/[^/]+/[^/]+/[^/]+/[^/]+$" -type d | sort -V | while read -r line; do echo "$(date +"%FT%I:%M:%S%p%Z") CREATE,ISDIR $line" | tee -a $log_path; done
+        find $directory_watch_path_s -regex "/[^/]+/[^/]+/[^/]+/[^/]+$" -type f | sort -V | while read -r line; do echo "$(date +"%FT%I:%M:%S%p%Z") CREATE $line" | tee -a $log_path; done
     fi
     notify-send --expire-time=0 --urgency=critical -i ~/vcs-locally-modified-unstaged.svg "$(date +"%FT%I:%M:%S%p%Z")" "\- $log_path does not exist.\n- Captured current state of watched folder(s)\n- [!] END"
     exit 1
