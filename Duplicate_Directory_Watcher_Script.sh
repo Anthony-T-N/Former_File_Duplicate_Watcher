@@ -94,9 +94,8 @@ done;
 depth_pattern+="$"
 echo -e "$depth_pattern"
 
-# TODO: Ignore hidden files
-# -m: Execute indefinitely. -r: Watch all subdirectories of any directories passed as arguments
-inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' $directory_watch_path $directory_watch_path_s |
+# -m: Execute indefinitely. -r: Watch all subdirectories of any directories passed as arguments --exclude '/\.' excludes hidden files.
+inotifywait -mr -e delete,create --timefmt '%FT%I:%M:%S%p%Z' --format '%T %e %w%f' --exclude '/\.' $directory_watch_path $directory_watch_path_s |
 while read -r line; 
 do
     # Ignore non-directory creations.
